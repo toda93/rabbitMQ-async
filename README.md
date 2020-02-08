@@ -1,2 +1,1 @@
-# redis-async
 # rabbitMQ-async

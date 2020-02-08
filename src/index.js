@@ -1,4 +1,4 @@
-import RedisAsync from './RedisAsync';
+import RabbitMQAsync from './RabbitMQAsync';
 
 
-export default RedisAsync
+export default RabbitMQAsync
