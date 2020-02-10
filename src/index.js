@@ -11,17 +11,15 @@ class RabbitMQAsync {
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
 
-        this._alert('connect', 'MQ connect');
-
         this.client.on('error', (err) => {
             this._alert('error', 'MQ Error' + err);
         });
 
-        this.client.on("close", function() {
+        this.client.on('close', () => {
             this._alert('close', 'MQ close');
-            console.error("[AMQP] reconnecting");
-            setTimeout(connect, 1000);
         });
+
+        this._alert('connect', 'MQ connect');
     }
 
 
