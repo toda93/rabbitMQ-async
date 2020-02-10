@@ -9,17 +9,22 @@ class RabbitMQAsync {
 
     async connect() {
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
-        this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
+        try {
+            this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
+            this.connected = true;
 
-        this.client.on('error', (err) => {
-            this._alert('error', 'MQ Error' + err);
-        });
+            this.client.on('error', (err) => {
+                this._alert('error', 'MQ Error' + err);
+            });
 
-        this.client.on('close', () => {
-            this._alert('close', 'MQ close');
-        });
+            this.client.on('close', () => {
+                this._alert('close', 'MQ close');
+            });
+        } catch (e) {
+            this.connected = false;
+            this._alert('connect', 'MQ connect' + e);
 
-        this._alert('connect', 'MQ connect');
+        }
     }
 
 
