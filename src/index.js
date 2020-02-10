@@ -12,18 +12,23 @@ class RabbitMQAsync {
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
+            this._alert('connect', 'MQ Error' + err);
 
             this.client.on('error', (err) => {
                 this._alert('error', 'MQ Error' + err);
+                setTimeout(connect, 10000);
+
             });
 
             this.client.on('close', () => {
+                this.connected = false;
                 this._alert('close', 'MQ close');
+                setTimeout(connect, 10000);
             });
         } catch (e) {
             this.connected = false;
             this._alert('connect', 'MQ connect' + e);
-
+            setTimeout(connect, 10000);
         }
     }
 
