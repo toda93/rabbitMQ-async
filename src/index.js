@@ -2,24 +2,26 @@ import amqp from 'amqplib';
 
 class RabbitMQAsync {
     constructor(config) {
+        this.connected = false;
         this.config = config;
+        this.connect();
     }
 
     async connect() {
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
-        this.connection = await amqp.connect(`amqp://${this.config.host}`, opt);
-        this.isConnected = true;
+        this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
 
-        this.connection.on("error", function(err)
-        {
-            console.error(err);
-            setTimeout(connect, 10000);
+        this.client.on('connect', () => {
+            this.connected = true;
+            this._alert('MQ connected');
         });
 
-        this.connection.on("close", function()
-        {
-            console.error("connection to RabbitQM closed!");
-            setTimeout(connect, 10000);
+        this.client.on('end', () => {
+            this._alert('MQ end');
+        });
+
+        this.client.on('error', (err) => {
+            this._alert('MQ Error' + err);
         });
     }
 
@@ -50,6 +52,16 @@ class RabbitMQAsync {
         await channel.consume(queue, cb, {
             noAck: true
         });
+    }
+
+    setAlertCallback(callback) {
+        this.alertCallback = callback;
+    }
+
+    _alert(msg) {
+        if (typeof this.alertCallback === 'function') {
+            this.alertCallback(msg);
+        }
     }
 }
 
