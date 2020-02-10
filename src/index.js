@@ -11,17 +11,14 @@ class RabbitMQAsync {
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
 
-        this.client.on('connect', () => {
-            this.connected = true;
-            this._alert('connect', 'MQ connected');
-        });
-
-        this.client.on('end', () => {
-            this._alert('end', 'MQ end');
-        });
-
         this.client.on('error', (err) => {
             this._alert('error', 'MQ Error' + err);
+        });
+
+        this.client.on("close", function() {
+            this._alert('close', 'MQ close');
+            console.error("[AMQP] reconnecting");
+            setTimeout(connect, 1000);
         });
     }
 
@@ -30,11 +27,11 @@ class RabbitMQAsync {
 
     async close() {
         this.isConnected = false;
-        this.connection.close();
+        this.client.close();
     }
 
     async send(queue, msg) {
-        let channel = await this.connection.createChannel();
+        let channel = await this.client.createChannel();
         await channel.assertQueue(queue, {
             durable: true
         });
@@ -45,7 +42,7 @@ class RabbitMQAsync {
     }
 
     async receiving(queue, cb) {
-        let channel = await this.connection.createChannel();
+        let channel = await this.client.createChannel();
         await channel.assertQueue(queue, {
             durable: true
         });
