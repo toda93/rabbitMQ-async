@@ -10,11 +10,16 @@ class RabbitMQAsync {
         this.connection = await amqp.connect(`amqp://${this.config.host}`, opt);
         this.isConnected = true;
 
+        this.connection.on("error", function(err)
+        {
+            console.error(err);
+            setTimeout(connect, 10000);
+        });
 
-        this.connection.on("error", function(err) {
-            if (err.message !== "Connection closing") {
-                console.error("[AMQP] conn error", err.message);
-            }
+        this.connection.on("close", function()
+        {
+            console.error("connection to RabbitQM closed!");
+            setTimeout(connect, 10000);
         });
     }
 
