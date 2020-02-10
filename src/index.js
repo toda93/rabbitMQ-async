@@ -6,11 +6,23 @@ class RabbitMQAsync {
     }
 
     async connect() {
-        const opt = {credentials: amqp.credentials.plain(this.config.username, this.config.password)};
+        const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         this.connection = await amqp.connect(`amqp://${this.config.host}`, opt);
+        this.isConnected = true;
+
+
+        this.connection.on("error", function(err) {
+            if (err.message !== "Connection closing") {
+                console.error("[AMQP] conn error", err.message);
+            }
+        });
     }
 
+
+
+
     async close() {
+        this.isConnected = false;
         this.connection.close();
     }
 
