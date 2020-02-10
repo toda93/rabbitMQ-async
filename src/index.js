@@ -13,15 +13,15 @@ class RabbitMQAsync {
 
         this.client.on('connect', () => {
             this.connected = true;
-            this._alert('MQ connected');
+            this._alert('connect', 'MQ connected');
         });
 
         this.client.on('end', () => {
-            this._alert('MQ end');
+            this._alert('end', 'MQ end');
         });
 
         this.client.on('error', (err) => {
-            this._alert('MQ Error' + err);
+            this._alert('error', 'MQ Error' + err);
         });
     }
 
@@ -58,9 +58,11 @@ class RabbitMQAsync {
         this.alertCallback = callback;
     }
 
-    _alert(msg) {
+    _alert(status, msg) {
         if (typeof this.alertCallback === 'function') {
-            this.alertCallback(msg);
+            this.alertCallback(status, msg);
+        } else {
+            console.info(status, msg);
         }
     }
 }
