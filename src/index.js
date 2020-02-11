@@ -1,5 +1,10 @@
 import amqp from 'amqplib';
 
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 class RabbitMQAsync {
     constructor(config) {
         this.connected = false;
@@ -8,35 +13,34 @@ class RabbitMQAsync {
     }
 
     async connect() {
-        this._alert('connecting', this.config);
-        const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
+        this._alert('connecting', 'MQ connecting...');
+        const opt = {credentials: amqp.credentials.plain(this.config.username, this.config.password)};
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
             this._alert('connect', 'MQ connected');
 
             this.client.on('error', (err) => {
+                this.connected = false;
                 this._alert('error', 'MQ Error' + err);
-                const reconnect = this.connect;
-                setTimeout(reconnect, 10000);
+                this.reconnect();
             });
 
             this.client.on('close', () => {
                 this.connected = false;
                 this._alert('close', 'MQ closed');
-                const reconnect = this.connect;
-                setTimeout(reconnect, 10000);
+                this.reconnect();
             });
         } catch (err) {
             this.connected = false;
             this._alert('error', 'MQ connect' + err);
-            const reconnect = this.connect;
-            setTimeout(reconnect, 10000);
+            this.reconnect();
         }
     }
-
-
-
+    async reconnect() {
+        await  timeout(5000);
+        this.connect();
+    }
 
     async close() {
         this.isConnected = false;
