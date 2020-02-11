@@ -8,7 +8,7 @@ class RabbitMQAsync {
     }
 
     async connect() {
-        this._alert('connecting', 'MQ connecting...', this.config);
+        this._alert('connecting', this.config);
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);

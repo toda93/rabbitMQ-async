@@ -1,6 +1,6 @@
 {
     "name": "@azteam/rabbitmq-async",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "description": "",
     "main": "lib/index.js",
     "repository": {
