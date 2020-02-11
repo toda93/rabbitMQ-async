@@ -38,6 +38,7 @@ class RabbitMQAsync {
         }
     }
     async reconnect() {
+        this._alert('reconnect', 'MQ try reconnect...');
         await  timeout(5000);
         this.connect();
     }
