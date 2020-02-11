@@ -16,20 +16,21 @@ class RabbitMQAsync {
 
             this.client.on('error', (err) => {
                 this._alert('error', 'MQ Error' + err);
-                setTimeout(this.connect, 10000);
-
+                const reconnect = this.connect;
+                setTimeout(reconnect, 10000);
             });
 
             this.client.on('close', () => {
-                
                 this.connected = false;
                 this._alert('close', 'MQ closed');
-                setTimeout(this.connect, 10000);
+                const reconnect = this.connect;
+                setTimeout(reconnect, 10000);
             });
         } catch (err) {
             this.connected = false;
             this._alert('error', 'MQ connect' + err);
-            setTimeout(this.connect, 10000);
+            const reconnect = this.connect;
+            setTimeout(reconnect, 10000);
         }
     }
 
