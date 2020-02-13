@@ -1,8 +1,8 @@
 {
     "name": "@azteam/rabbitmq-async",
-    "version": "1.0.22",
+    "version": "1.0.23",
     "description": "",
-    "main": "lib/index.js",
+    "main": "src/index.js",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/toda93/rabbitmq-async.git"
@@ -25,29 +25,5 @@
     "homepage": "https://github.com/toda93/rabbitmq-async#readme",
     "dependencies": {
         "amqplib": "^0.5.5"
-    },
-    "devDependencies": {
-        "@babel/cli": "^7.7.5",
-        "@babel/core": "^7.7.5",
-        "@babel/plugin-transform-async-to-generator": "^7.7.4",
-        "@babel/preset-env": "^7.7.6",
-        "@babel/runtime": "^7.7.5"
-    },
-    "babel": {
-        "presets": [
-            [
-                "@babel/preset-env",
-                {
-                    "targets": {
-                        "node": "current"
-                    }
-                }
-            ]
-        ]
-    },
-    "scripts": {
-        "pretest": "babel src --out-dir lib",
-        "test": "node lib/test.js",
-        "prepublish": "babel src --out-dir lib"
     }
 }
