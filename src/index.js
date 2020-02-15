@@ -14,7 +14,7 @@ class RabbitMQAsync {
 
     async connect() {
         this._alert('connecting', 'MQ connecting...');
-        const opt = {credentials: amqp.credentials.plain(this.config.username, this.config.password)};
+        const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
@@ -39,7 +39,7 @@ class RabbitMQAsync {
     }
     async reconnect() {
         this._alert('reconnect', 'MQ try reconnect...');
-        await  timeout(5000);
+        await timeout(5000);
         this.connect();
     }
 
@@ -49,24 +49,32 @@ class RabbitMQAsync {
     }
 
     async send(queue, msg) {
-        let channel = await this.client.createChannel();
-        await channel.assertQueue(queue, {
-            durable: true
-        });
-        await channel.sendToQueue(queue, Buffer.from(msg), {
-            persistent: true
-        });
-        console.log(`Send ${queue}, ${msg}`);
+        if (this.connected) {
+            let channel = await this.client.createChannel();
+            await channel.assertQueue(queue, {
+                durable: true
+            });
+            await channel.sendToQueue(queue, Buffer.from(msg), {
+                persistent: true
+            });
+            return true;
+        }
+        return false;
     }
 
     async receiving(queue, cb) {
-        let channel = await this.client.createChannel();
-        await channel.assertQueue(queue, {
-            durable: true
-        });
-        await channel.consume(queue, cb, {
-            noAck: true
-        });
+        if (this.connected) {
+            let channel = await this.client.createChannel();
+            await channel.assertQueue(queue, {
+                durable: true
+            });
+            await channel.consume(queue, cb, {
+                noAck: true
+            });
+        } else {
+            await timeout(5000);
+            return receiving(queue, cb);
+        }
     }
 
     setAlertCallback(callback) {
