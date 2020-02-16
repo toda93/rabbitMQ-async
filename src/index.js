@@ -54,7 +54,7 @@ class RabbitMQAsync {
             await channel.assertQueue(queue, {
                 durable: true
             });
-            await channel.sendToQueue(queue, Buffer.from(msg), {
+            await channel.sendToQueue(queue, Buffer.from(JSON.stringfy(msg)), {
                 persistent: true
             });
             return true;
@@ -68,7 +68,10 @@ class RabbitMQAsync {
             await channel.assertQueue(queue, {
                 durable: true
             });
-            await channel.consume(queue, cb, {
+            await channel.consume(queue, (msg) => {
+                data = JSON.parse(msg.content.toString());
+                cb(data);
+            }, {
                 noAck: true
             });
         } else {
