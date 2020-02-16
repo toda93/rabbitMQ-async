@@ -69,7 +69,7 @@ class RabbitMQAsync {
                 durable: true
             });
             await channel.consume(queue, (msg) => {
-                data = JSON.parse(msg.content.toString());
+                const data = JSON.parse(msg.content.toString());
                 cb(data);
             }, {
                 noAck: true
