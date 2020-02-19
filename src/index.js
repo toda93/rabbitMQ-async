@@ -1,9 +1,6 @@
 import amqp from 'amqplib';
+import {timeout} from '@azteam/ultilities';
 
-
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 class RabbitMQAsync {
     constructor(config) {
