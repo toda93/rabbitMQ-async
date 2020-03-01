@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import {timeout} from '@azteam/ultilities';
+import { timeout } from '@azteam/ultilities';
 
 
 class RabbitMQAsync {
@@ -45,11 +45,12 @@ class RabbitMQAsync {
         this.client.close();
     }
 
-    async send(queue, msg) {
+    async send(queue, msg, ttl = 3600000) {
         if (this.connected) {
             let channel = await this.client.createChannel();
             await channel.assertQueue(queue, {
-                durable: true
+                durable: true,
+                messageTtl: ttl
             });
             await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                 persistent: true
