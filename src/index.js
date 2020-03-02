@@ -50,7 +50,9 @@ class RabbitMQAsync {
             let channel = await this.client.createChannel();
             await channel.assertQueue(queue, {
                 durable: true,
-                messageTtl: ttl
+                arguments: {
+                    messageTtl: ttl
+                }
             });
             await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                 persistent: true
