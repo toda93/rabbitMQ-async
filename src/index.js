@@ -51,7 +51,8 @@ class RabbitMQAsync {
             await channel.assertQueue(queue, {
                 durable: true,
                 arguments: {
-                    expires: ttl
+                    expires: ttl,
+                    messageTtl: ttl
                 }
             });
             await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
