@@ -94,3 +94,4 @@ class RabbitMQAsync {
     }
 }
 
+export default RabbitMQAsync;
