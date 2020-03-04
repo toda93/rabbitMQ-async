@@ -9,7 +9,7 @@ class RabbitMQAsync {
         this.connect();
     }
 
-    async waitConnect(n = 10) {
+    async waitConnection(n = 10) {
         const i = 0;
         while (!this.connected) {
             ++i;
