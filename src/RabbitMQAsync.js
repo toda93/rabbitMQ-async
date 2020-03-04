@@ -9,6 +9,18 @@ class RabbitMQAsync {
         this.connect();
     }
 
+    async waitConnect(n = 10) {
+        const i = 0;
+        while (!this.connected) {
+            ++i;
+            if (i >= n) {
+                return false;
+            }
+            await timeout(1000);
+        }
+        return true;
+    }
+
     async connect() {
         this._alert('connecting', 'MQ connecting...');
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
@@ -34,6 +46,7 @@ class RabbitMQAsync {
             this.reconnect();
         }
     }
+
     async reconnect() {
         this._alert('reconnect', 'MQ try reconnect...');
         await timeout(5000);
