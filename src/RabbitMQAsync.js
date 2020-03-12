@@ -82,11 +82,11 @@ class RabbitMQAsync {
             await channel.assertQueue(queue, {
                 durable: true
             });
-            await channel.consume(queue, (msg) => {
+            channel.prefetch(1);
+            await channel.consume(queue, async (msg) => {
                 const data = JSON.parse(msg.content.toString());
-                cb(data);
-            }, {
-                noAck: true
+                await cb(data);
+                channel.ack(msg);
             });
         } else {
             await timeout(5000);
