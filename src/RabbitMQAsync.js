@@ -58,7 +58,7 @@ class RabbitMQAsync {
         this.client.close();
     }
 
-    async send(queue, msg, ttl = 3600000) {
+    async send(queue, msg = {}, ttl = 3600000) {
         if (this.connected) {
             let channel = await this.client.createChannel();
             await channel.assertQueue(queue, {
