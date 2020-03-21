@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import { timeout } from '@azteam/ultilities';
+import {timeout} from '@azteam/ultilities';
 
 
 class RabbitMQAsync {
@@ -23,7 +23,7 @@ class RabbitMQAsync {
 
     async connect() {
         this._alert('connecting', 'MQ connecting...');
-        const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
+        const opt = {credentials: amqp.credentials.plain(this.config.username, this.config.password)};
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
@@ -85,15 +85,18 @@ class RabbitMQAsync {
                     durable: true
                 });
                 channel.prefetch(1);
-                await channel.consume(queue, async (msg) => {
-                    const data = JSON.parse(msg.content.toString());
-                    await cb(data);
-                    channel.ack(msg);
+                await channel.consume(queue, async function (msg) {
+                    try {
+                        const data = JSON.parse(msg.content.toString());
+                        await cb(data);
+                        channel.ack(msg);
+                    } catch (err) {
+                        channel.nack(msg);
+                        callbackError && callbackError(err);
+                    }
                 });
             } catch (err) {
-                if (callbackError) {
-                    callbackError(err);
-                }
+                callbackError && callbackError(err);
             }
 
 
