@@ -76,18 +76,27 @@ class RabbitMQAsync {
         return false;
     }
 
-    async receiving(queue, cb) {
+    async receiving(queue, cb, callbackError = null) {
         if (this.connected) {
             let channel = await this.client.createChannel();
-            await channel.assertQueue(queue, {
-                durable: true
-            });
-            channel.prefetch(1);
-            await channel.consume(queue, async (msg) => {
-                const data = JSON.parse(msg.content.toString());
-                await cb(data);
-                channel.ack(msg);
-            });
+
+            try {
+                await channel.assertQueue(queue, {
+                    durable: true
+                });
+                channel.prefetch(1);
+                await channel.consume(queue, async (msg) => {
+                    const data = JSON.parse(msg.content.toString());
+                    await cb(data);
+                    channel.ack(msg);
+                });
+            } catch (err) {
+                if (callbackError) {
+                    callbackError(err);
+                }
+            }
+
+
         } else {
             await timeout(5000);
             return receiving(queue, cb);
