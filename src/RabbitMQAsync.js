@@ -60,14 +60,24 @@ class RabbitMQAsync {
 
     async send(queue, msg = {}) {
         if (this.connected) {
-            let channel = await this.client.createChannel();
-            await channel.assertQueue(queue, {
-                durable: true,
-            });
-            await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
-                persistent: true
-            });
-            return true;
+            try {
+
+                let channel = await this.client.createChannel();
+                await channel.assertQueue(queue, {
+                    durable: true,
+                });
+                await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                    persistent: true
+                });
+                return true;
+
+            } catch (err) {
+                await timeout(5000);
+                return this.send(queue, msg);
+            }
+        } else {
+            await timeout(5000);
+            return this.send(queue, msg);
         }
         return false;
     }
@@ -93,13 +103,14 @@ class RabbitMQAsync {
                 });
             } catch (err) {
                 callbackError && callbackError(err);
-                return receiving(queue, cb, callbackError);
+                await timeout(5000);
+                return this.receiving(queue, cb, callbackError);
             }
 
 
         } else {
             await timeout(5000);
-            return receiving(queue, cb, callbackError);
+            return this.receiving(queue, cb, callbackError);
         }
     }
 
