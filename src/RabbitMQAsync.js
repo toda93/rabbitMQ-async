@@ -54,7 +54,7 @@ class RabbitMQAsync {
     }
 
     async close() {
-        this.isConnected = false;
+        this.connected = false;
         this.client.close();
     }
 
@@ -77,11 +77,11 @@ class RabbitMQAsync {
             let channel = await this.client.createChannel();
 
             try {
-                await channel.assertQueue(queue, {
+                 channel.assertQueue(queue, {
                     durable: true
                 });
                 channel.prefetch(1);
-                await channel.consume(queue, async function (msg) {
+                 channel.consume(queue, async function (msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         await cb(data);
@@ -93,12 +93,13 @@ class RabbitMQAsync {
                 });
             } catch (err) {
                 callbackError && callbackError(err);
+                return receiving(queue, cb, callbackError);
             }
 
 
         } else {
             await timeout(5000);
-            return receiving(queue, cb);
+            return receiving(queue, cb, callbackError);
         }
     }
 
