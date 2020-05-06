@@ -63,10 +63,10 @@ class RabbitMQAsync {
             try {
 
                 let channel = await this.client.createChannel();
-                await channel.assertQueue(queue, {
+                channel.assertQueue(queue, {
                     durable: true,
                 });
-                await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
                 });
                 return true;
@@ -84,9 +84,10 @@ class RabbitMQAsync {
 
     async receiving(queue, cb, callbackError = null) {
         if (this.connected) {
-            let channel = await this.client.createChannel();
 
             try {
+                let channel = await this.client.createChannel();
+
                 channel.assertQueue(queue, {
                     durable: true
                 });
