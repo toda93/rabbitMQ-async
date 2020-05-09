@@ -75,11 +75,11 @@ class RabbitMQAsync {
                 await timeout(5000);
                 return this.send(queue, msg);
             } finally {
-                if (channel) {
-                    setTimeout(() => {
+                setTimeout(() => {
+                    if (channel) {
                         channel.close();
-                    }, 300000);
-                }
+                    }
+                }, 300000);
             }
         } else {
             await timeout(5000);
@@ -93,6 +93,7 @@ class RabbitMQAsync {
             let channel = null;
             try {
                 channel = this.client.createChannel();
+
                 channel.assertQueue(queue, {
                     durable: true
                 });
@@ -103,21 +104,23 @@ class RabbitMQAsync {
                         await cb(data);
                         channel.ack(msg);
                     } catch (err) {
+                        channel.nack(msg);
                         throw err;
                     }
-
                 });
             } catch (err) {
                 callbackError && callbackError(err);
                 await timeout(5000);
                 return this.receiving(queue, cb, callbackError);
             } finally {
-                if (channel) {
-                    setTimeout(() => {
+                setTimeout(() => {
+                    if (channel) {
                         channel.close();
-                    }, 300000);
-                }
+                    }
+                }, 300000);
             }
+
+
         } else {
             await timeout(5000);
             return this.receiving(queue, cb, callbackError);
