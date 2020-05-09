@@ -77,7 +77,7 @@ class RabbitMQAsync {
             } finally {
                 setTimeout(() => {
                     if (channel) {
-                        await channel.close();
+                        channel.close();
                     }
                 }, 300000);
             }
@@ -110,12 +110,12 @@ class RabbitMQAsync {
                 });
             } catch (err) {
                 if (channel) {
-                    await channel.close();
+                    channel.close();
                 }
                 await timeout(5000);
                 callbackError && callbackError(err);
                 return this.receiving(queue, cb, callbackError);
-            } 
+            }
         } else {
             await timeout(5000);
             return this.receiving(queue, cb, callbackError);
