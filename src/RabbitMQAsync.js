@@ -109,18 +109,13 @@ class RabbitMQAsync {
                     }
                 });
             } catch (err) {
-                callbackError && callbackError(err);
+                if (channel) {
+                    channel.close();
+                }
                 await timeout(5000);
+                callbackError && callbackError(err);
                 return this.receiving(queue, cb, callbackError);
-            } finally {
-                setTimeout(() => {
-                    if (channel) {
-                        channel.close();
-                    }
-                }, 300000);
-            }
-
-
+            } 
         } else {
             await timeout(5000);
             return this.receiving(queue, cb, callbackError);
