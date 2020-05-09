@@ -23,6 +23,7 @@ class RabbitMQAsync {
     }
 
     async connect() {
+        this.channel = null;
         this._alert('connecting', 'MQ connecting...');
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         try {
@@ -84,7 +85,7 @@ class RabbitMQAsync {
     }
 
     async receiving(queue, cb, callbackError = null) {
-        if (this.connected) {
+        if (this.connected && this.channel) {
 
             try {
                 this.channel.assertQueue(queue, {
