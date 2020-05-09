@@ -7,6 +7,7 @@ class RabbitMQAsync {
         this.connected = false;
         this.config = config;
         this.connect();
+        this.channel = null;
     }
 
     async waitConnection(n = 10) {
@@ -27,6 +28,8 @@ class RabbitMQAsync {
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
+            this.channel = this.client.createChannel();
+
             this._alert('connect', 'MQ connected');
 
             this.client.on('error', (err) => {
@@ -59,14 +62,12 @@ class RabbitMQAsync {
     }
 
     async send(queue, msg = {}) {
-        if (this.connected) {
+        if (this.connected && this.channel) {
             try {
-
-                let channel = await this.client.createChannel();
-                channel.assertQueue(queue, {
+                this.channel.assertQueue(queue, {
                     durable: true,
                 });
-                channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
                 });
                 return true;
@@ -86,20 +87,18 @@ class RabbitMQAsync {
         if (this.connected) {
 
             try {
-                let channel = await this.client.createChannel();
-
-                channel.assertQueue(queue, {
+                this.channel.assertQueue(queue, {
                     durable: true
                 });
-                channel.prefetch(1);
-                channel.consume(queue, async function(msg) {
+                this.channel.prefetch(1);
+                this.channel.consume(queue, async function(msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         await cb(data);
-                        channel.ack(msg);
+                        this.channel.ack(msg);
                     } catch (err) {
-                        channel.nack(msg);
-                        callbackError && callbackError(err);
+                        this.channel.nack(msg);
+                        throw err;
                     }
                 });
             } catch (err) {
