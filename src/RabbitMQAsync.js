@@ -7,7 +7,6 @@ class RabbitMQAsync {
         this.connected = false;
         this.config = config;
         this.connect();
-        this.channel = null;
     }
 
     async waitConnection(n = 10) {
@@ -23,14 +22,11 @@ class RabbitMQAsync {
     }
 
     async connect() {
-        this.channel = null;
         this._alert('connecting', 'MQ connecting...');
         const opt = { credentials: amqp.credentials.plain(this.config.username, this.config.password) };
         try {
             this.client = await amqp.connect(`amqp://${this.config.host}`, opt);
             this.connected = true;
-            this.channel = this.client.createChannel();
-
             this._alert('connect', 'MQ connected');
 
             this.client.on('error', (err) => {
@@ -63,12 +59,14 @@ class RabbitMQAsync {
     }
 
     async send(queue, msg = {}) {
-        if (this.connected && this.channel) {
+        if (this.connected) {
+            let channel = null;
             try {
-                this.channel.assertQueue(queue, {
+                channel = this.client.createChannel();
+                channel.assertQueue(queue, {
                     durable: true,
                 });
-                this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
                 });
                 return true;
@@ -76,6 +74,12 @@ class RabbitMQAsync {
             } catch (err) {
                 await timeout(5000);
                 return this.send(queue, msg);
+            } finally {
+                if (channel) {
+                    setTimeout(() => {
+                        channel.close();
+                    }, 300000);
+                }
             }
         } else {
             await timeout(5000);
@@ -85,30 +89,35 @@ class RabbitMQAsync {
     }
 
     async receiving(queue, cb, callbackError = null) {
-        if (this.connected && this.channel) {
-
+        if (this.connected) {
+            let channel = null;
             try {
-                this.channel.assertQueue(queue, {
+                channel = this.client.createChannel();
+                channel.assertQueue(queue, {
                     durable: true
                 });
-                this.channel.prefetch(1);
-                this.channel.consume(queue, async function(msg) {
+                channel.prefetch(1);
+                channel.consume(queue, async function(msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         await cb(data);
-                        this.channel.ack(msg);
+                        channel.ack(msg);
                     } catch (err) {
-                        this.channel.nack(msg);
                         throw err;
                     }
+
                 });
             } catch (err) {
                 callbackError && callbackError(err);
                 await timeout(5000);
                 return this.receiving(queue, cb, callbackError);
+            } finally {
+                if (channel) {
+                    setTimeout(() => {
+                        channel.close();
+                    }, 300000);
+                }
             }
-
-
         } else {
             await timeout(5000);
             return this.receiving(queue, cb, callbackError);
