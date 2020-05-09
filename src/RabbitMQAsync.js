@@ -62,11 +62,11 @@ class RabbitMQAsync {
         if (this.connected) {
             let channel = null;
             try {
-                channel = this.client.createChannel();
-                channel.assertQueue(queue, {
+                channel = await this.client.createChannel();
+                await channel.assertQueue(queue, {
                     durable: true,
                 });
-                channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
                 });
                 return true;
@@ -77,7 +77,7 @@ class RabbitMQAsync {
             } finally {
                 setTimeout(() => {
                     if (channel) {
-                        channel.close();
+                        await channel.close();
                     }
                 }, 300000);
             }
@@ -92,13 +92,13 @@ class RabbitMQAsync {
         if (this.connected) {
             let channel = null;
             try {
-                channel = this.client.createChannel();
+                channel = await this.client.createChannel();
 
-                channel.assertQueue(queue, {
+                await channel.assertQueue(queue, {
                     durable: true
                 });
-                channel.prefetch(1);
-                channel.consume(queue, async function(msg) {
+                await channel.prefetch(1);
+                await channel.consume(queue, async function(msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         await cb(data);
@@ -110,7 +110,7 @@ class RabbitMQAsync {
                 });
             } catch (err) {
                 if (channel) {
-                    channel.close();
+                    await channel.close();
                 }
                 await timeout(5000);
                 callbackError && callbackError(err);
