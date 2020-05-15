@@ -76,7 +76,7 @@ class RabbitMQAsync {
                 return this.send(queue, msg);
             } finally {
                 setTimeout(() => {
-                    try { channel.close(); } catch (err) {}
+                    try { channel.close(); } catch (err) {};
                 }, 300000);
             }
         } else {
@@ -107,27 +107,28 @@ class RabbitMQAsync {
                     }
                 });
             } catch (err) {
-                try { channel.close(); } catch (err) {}
+                try { channel.close(); } catch (err) {};
                 await timeout(5000);
                 callbackError && callbackError(err);
                 return this.receiving(queue, cb, callbackError);
-            } else {
-                await timeout(5000);
-                return this.receiving(queue, cb, callbackError);
             }
-        }
-
-        setAlertCallback(callback) {
-            this.alertCallback = callback;
-        }
-
-        _alert(status, msg) {
-            if (typeof this.alertCallback === 'function') {
-                this.alertCallback(status, msg);
-            } else {
-                console.log(status, msg);
-            }
+        } else {
+            await timeout(5000);
+            return this.receiving(queue, cb, callbackError);
         }
     }
 
-    export default RabbitMQAsync;
+    setAlertCallback(callback) {
+        this.alertCallback = callback;
+    }
+
+    _alert(status, msg) {
+        if (typeof this.alertCallback === 'function') {
+            this.alertCallback(status, msg);
+        } else {
+            console.log(status, msg);
+        }
+    }
+}
+
+export default RabbitMQAsync;
