@@ -77,7 +77,7 @@ class RabbitMQAsync {
             } finally {
                 setTimeout(function(channel) {
                     try { channel.close(); } catch (err) {};
-                }, channel, x);
+                }, channel, 5000);
             }
         } else {
             await timeout(5000);
