@@ -75,7 +75,6 @@ class RabbitMQAsync {
                 await timeout(5000);
                 return this.send(queue, msg);
             } finally {
-                await timeout(5000);
                 channel.close();
             }
         } else {
