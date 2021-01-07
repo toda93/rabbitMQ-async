@@ -53,7 +53,7 @@ class RabbitMQAsync {
         this.connect();
     }
 
-    async close() {
+    close() {
         this.connected = false;
         this.client.close();
     }
@@ -75,7 +75,7 @@ class RabbitMQAsync {
                 await timeout(5000);
                 return this.send(queue, msg);
             } finally {
-                try { channel.close(); } catch (err) {};
+                try { channel && channel.close(); } catch (err) {};
             }
         } else {
             await timeout(5000);
@@ -105,7 +105,7 @@ class RabbitMQAsync {
                     }
                 });
             } catch (err) {
-                try { channel.close(); } catch (err) {};
+                try { channel && channel.close(); } catch (err) {};
                 await timeout(5000);
                 callbackError && callbackError(err);
                 return this.receiving(queue, cb, callbackError);
