@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import { timeout } from '@azteam/ultilities';
+import { timeout } from '@azteam/util';
 
 
 class RabbitMQAsync {
