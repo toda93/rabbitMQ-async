@@ -94,19 +94,20 @@ class RabbitMQAsync {
                     durable: true
                 });
                 await channel.prefetch(1);
-                await channel.consume(queue, async function(msg) {
-                    try {
-                        const data = JSON.parse(msg.content.toString());
-                        await cb(data);
-                        await channel.ack(msg);
-                    } catch (err) {
-                        await channel.nack(msg);
 
-                        console.info('error block 1', err);
-
-                        throw err;
-                    }
+                await new Promise((resolve, reject) => {
+                    channel.consume(queue, async function(msg) {
+                        try {
+                            const data = JSON.parse(msg.content.toString());
+                            await cb(data);
+                            await channel.ack(msg);
+                        } catch (err) {
+                            await channel.nack(msg);
+                            throw err;
+                        }
+                    });
                 });
+
             } catch (err) {
                 console.info('error block 2', err);
 
