@@ -101,9 +101,10 @@ class RabbitMQAsync {
                             const data = JSON.parse(msg.content.toString());
                             await cb(data);
                             await channel.ack(msg);
+                            resolve();
                         } catch (err) {
                             await channel.nack(msg);
-                            throw err;
+                            reject(err);
                         }
                     });
                 });
