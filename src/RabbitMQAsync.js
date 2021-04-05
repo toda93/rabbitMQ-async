@@ -101,10 +101,15 @@ class RabbitMQAsync {
                         await channel.ack(msg);
                     } catch (err) {
                         await channel.nack(msg);
+
+                        console.info('error block 1', err);
+
                         throw err;
                     }
                 });
             } catch (err) {
+                console.info('error block 2', err);
+
                 try { channel && channel.close(); } catch (err) {};
                 await timeout(5000);
                 callbackError && callbackError(err);
