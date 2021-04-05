@@ -110,8 +110,6 @@ class RabbitMQAsync {
                 });
 
             } catch (err) {
-                console.info('error block 2', err);
-
                 try { channel && channel.close(); } catch (err) {};
                 await timeout(5000);
                 callbackError && callbackError(err);
