@@ -58,61 +58,61 @@ class RabbitMQAsync {
         this.client.close();
     }
 
-    async send(queue, msg = {}) {
+    async send(queueName, msg = {}) {
         if (this.connected) {
             let channel = null;
             try {
                 channel = await this.client.createChannel();
-                await channel.assertQueue(queue, {
+                await channel.assertQueue(queueName, {
                     durable: true,
                 });
-                await channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+                await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
                 });
                 return true;
 
             } catch (err) {
                 await timeout(5000);
-                return this.send(queue, msg);
+                return this.send(queueName, msg);
             } finally {
                 try { channel && channel.close(); } catch (err) {};
             }
         } else {
             await timeout(5000);
-            return this.send(queue, msg);
+            return this.send(queueName, msg);
         }
         return false;
     }
 
-    async receiving(queue, cb, callbackError = null) {
+    async receiving(queueName, cb, callbackError = null) {
         if (this.connected) {
             let channel = null;
             try {
                 channel = await this.client.createChannel();
 
-                await channel.assertQueue(queue, {
+                await channel.assertQueue(queueName, {
                     durable: true
                 });
                 await channel.prefetch(1);
-                channel.consume(queue, async function(msg) {
+                channel.consume(queueName, async function(msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         await cb(data);
                         await channel.ack(msg);
                     } catch (err) {
                         await channel.nack(msg);
-                        callbackError && callbackError(err);
+                        callbackError && callbackError(queueName, err);
                     }
                 })
             } catch (err) {
                 try { channel && channel.close(); } catch (err) {};
                 await timeout(5000);
-                callbackError && callbackError(err);
-                return this.receiving(queue, cb, callbackError);
+                callbackError && callbackError(queueName, err);
+                return this.receiving(queueName, cb, callbackError);
             }
         } else {
             await timeout(5000);
-            return this.receiving(queue, cb, callbackError);
+            return this.receiving(queueName, cb, callbackError);
         }
     }
 
