@@ -102,8 +102,14 @@ class RabbitMQAsync {
                     } catch (err) {
                         try {
                             await channel.nack(msg);
-                        } catch (err) {}
-                        callbackError && callbackError(queueName, err);
+                        } catch () {
+                            try { channel && channel.close(); } catch (err) {};
+                            await timeout(5000);
+                            callbackError && callbackError(queueName, err);
+                            return this.receiving(queueName, cb, callbackError);
+                        } finally {
+                            callbackError && callbackError(queueName, err);
+                        }
                     }
                 })
             } catch (err) {
