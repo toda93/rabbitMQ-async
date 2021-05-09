@@ -100,7 +100,9 @@ class RabbitMQAsync {
                         await cb(data);
                         await channel.ack(msg);
                     } catch (err) {
-                        await channel.nack(msg);
+                        try {
+                            await channel.nack(msg);
+                        } catch (err) {}
                         callbackError && callbackError(queueName, err);
                     }
                 })
