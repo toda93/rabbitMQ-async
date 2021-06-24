@@ -100,10 +100,7 @@ class RabbitMQAsync {
                     try {
                         const data = JSON.parse(msg.content.toString());
                         if (msg.fields.redelivered && msg.fields.deliveryTag >= 10) {
-                            await messageQueue.send('ERROR_RETRY', {
-                                queue: queueName,
-                                data
-                            });
+                            console.error(msg);
                         } else {
                             await cb(data);
                         }
