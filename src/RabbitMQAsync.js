@@ -99,8 +99,22 @@ class RabbitMQAsync {
                 channel.consume(queueName, async function(msg) {
                     try {
                         const data = JSON.parse(msg.content.toString());
-                        if (msg.fields.redelivered && msg.fields.deliveryTag >= 10) {
-                            await messageQueue.send(queueName, data);
+                        if (msg.fields.redelivered) {
+
+                            if (!data.retry) {
+                                data.retry = 0;
+                            }
+                            data.retry += 1;
+
+                            if (data.retry < 10) {
+                                await messageQueue.send(queueName, data);
+                            } else {
+                                await messageQueue.send('RETRY', {
+                                    queueName,
+                                    data
+                                });
+                            }
+
                         } else {
                             await cb(data);
                         }
