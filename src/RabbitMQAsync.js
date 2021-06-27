@@ -67,12 +67,9 @@ class RabbitMQAsync {
                     durable: true,
                 });
 
-
-                console.info(queueInfo);
-
-                if(force){
+                if (force || queueInfo.messageCount === 0) {
                     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)), {
-                    persistent: true
+                        persistent: true
                     });
                 }
 
