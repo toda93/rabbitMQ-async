@@ -58,17 +58,24 @@ class RabbitMQAsync {
         this.client.close();
     }
 
-    async send(queueName, msg = {}) {
+    async send(queueName, msg = {}, force = true) {
         if (this.connected) {
             let channel = null;
             try {
                 channel = await this.client.createChannel();
-                await channel.assertQueue(queueName, {
+                const queueInfo = await channel.assertQueue(queueName, {
                     durable: true,
                 });
-                await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)), {
+
+
+                console.info(queueInfo);
+
+                if(force){
+                    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)), {
                     persistent: true
-                });
+                    });
+                }
+
                 return true;
 
             } catch (err) {
