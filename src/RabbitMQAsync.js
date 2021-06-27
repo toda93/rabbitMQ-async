@@ -110,7 +110,7 @@ class RabbitMQAsync {
                             }
                             data.retry += 1;
 
-                            if (data.retry < 10) {
+                            if (data.retry < 5) {
                                 await messageQueue.send(queueName, data);
                             } else {
                                 await messageQueue.send('RETRY', {
